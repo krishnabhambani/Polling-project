@@ -3,9 +3,11 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.FRONTEND_URL || '*'
+}));
 app.use(bodyParser.json());
 
 // In-memory data store
@@ -18,7 +20,7 @@ const generateId = (prefix = 'id') => {
 
 // Root route
 app.get('/', (req, res) => {
-    res.send('Poll Creator API is running. Access the frontend at http://localhost:5173');
+    res.send('Poll Creator API is running.');
 });
 
 // GET /api/polls/:id
