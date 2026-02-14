@@ -7,8 +7,8 @@ const PollPage = () => {
     const [poll, setPoll] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedOption, setSelectedOption] = useState(null); // For single choice
-    const [selectedOptions, setSelectedOptions] = useState([]); // For multiple choice
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [selectedOptions, setSelectedOptions] = useState([]);
     const [hasVoted, setHasVoted] = useState(false);
     const [voting, setVoting] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -17,7 +17,6 @@ const PollPage = () => {
         fetchPoll();
         checkIfVoted();
 
-        // specific bonus feature: real-time updates
         const interval = setInterval(() => {
             fetchPoll();
         }, 3000);
@@ -27,7 +26,8 @@ const PollPage = () => {
 
     const fetchPoll = async () => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/polls/${id}`);
+            // ✅ Using Environment Variable
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/polls/${id}`);
             setPoll(response.data);
         } catch (err) {
             setError('Failed to load poll. It may not exist.');
@@ -60,23 +60,12 @@ const PollPage = () => {
 
         setVoting(true);
         try {
-            // If multiple allowed, we might need to send multiple requests or update API to accept array.
-            // Current API requirement says "Accepts optionId". 
-            // Assuming for now simple single vote per request or creating loop if multiple supported by backend in future.
-            // BUT requirement said "Accepts optionId". Let's stick to single vote for single choice, 
-            // and for multiple choice, we'll just loop for this mvp or just pick first if backend strictly one.
-            // Actually, standard REST for this usually takes one. 
-            // Let's assume for this task: One vote = One option increment.
-            // If "Allow Multiple" is purely UI, we might need to change backend. 
-            // Re-reading requirements: "POST /api/polls/:id/vote: Accepts optionId."
-            // This implies one vote per call. 
-            // Detailed Handling: If multiple, we call API for each selected option.
-
             const optionsToVote = poll.allowMultiple ? selectedOptions : [selectedOption];
 
             let lastPollData = null;
             for (const optId of optionsToVote) {
-                const response = await axios.post(`http://localhost:5000/api/polls/${id}/vote`, {
+                // ✅ Using Environment Variable
+                const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/polls/${id}/vote`, {
                     optionId: optId,
                     sessionId: 'client_' + Math.random().toString(36).substr(2, 9)
                 });
@@ -110,7 +99,8 @@ const PollPage = () => {
     const closePoll = async () => {
         if (!confirm('Are you sure you want to close this poll? User voting will no longer be possible.')) return;
         try {
-            const response = await axios.post(`http://localhost:5000/api/polls/${id}/close`);
+            // ✅ Using Environment Variable
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/polls/${id}/close`);
             setPoll(response.data);
         } catch (err) {
             alert('Failed to close poll');
@@ -124,8 +114,6 @@ const PollPage = () => {
     const totalVotes = poll.totalVotes;
     const isExpired = poll.expiresAt && new Date(poll.expiresAt) < new Date();
     const showResults = hasVoted || poll.status === 'closed' || isExpired;
-
-    // Find winner for highlighting
     const maxVotes = Math.max(...poll.options.map(o => o.votes));
 
     return (

@@ -11,6 +11,9 @@ const CreatePoll = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+    // Debugging: This will show you exactly what Vercel "sees" in the browser console
+    console.log('Current API URL:', import.meta.env.VITE_API_URL);
+
     const handleOptionChange = (index, value) => {
         const newOptions = [...options];
         newOptions[index].text = value;
@@ -54,7 +57,8 @@ const CreatePoll = () => {
                 expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null
             };
 
-            const response = await axios.post('http://localhost:5000/api/polls', payload);
+            // ✅ Using Environment Variable
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/polls`, payload);
             const { id } = response.data;
             navigate(`/poll/${id}`);
         } catch (err) {
