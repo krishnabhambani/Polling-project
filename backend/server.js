@@ -1,14 +1,21 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
+// Removed body-parser dependency to prevent crashes
+// const bodyParser = require('body-parser'); 
 
 const app = express();
 const port = process.env.PORT || 5000;
 
+// ✅ FIXED: Hardcoded allowed origins (No trailing slash)
 app.use(cors({
-    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/$/, "") : "*"
+    origin: [
+        "http://localhost:5173",                  // Your local frontend
+        "https://polling-project-opal.vercel.app" // Your live frontend (NO SLASH!)
+    ],
+    credentials: true
 }));
-app.use(bodyParser.json());
+
+app.use(express.json()); // Built-in Express parser
 
 // In-memory data store
 let polls = [];
@@ -51,7 +58,7 @@ app.post('/api/polls', (req, res) => {
         })),
         allowMultiple: !!allowMultiple,
         totalVotes: 0,
-        voters: [], // Stores session IDs or IPs
+        voters: [], 
         status: 'active',
         createdAt: new Date(),
         expiresAt: expiresAt ? new Date(expiresAt) : null,
@@ -66,7 +73,7 @@ app.post('/api/polls', (req, res) => {
 app.post('/api/polls/:id/vote', (req, res) => {
     const { optionId, sessionId } = req.body;
     const pollId = req.params.id;
-    const voterId = sessionId || req.ip; // Fallback to IP if no session ID provided
+    const voterId = sessionId || req.ip; 
 
     const pollIndex = polls.findIndex(p => p.id === pollId);
     if (pollIndex === -1) {
