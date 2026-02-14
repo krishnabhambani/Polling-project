@@ -6,21 +6,17 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 
-// ✅ FIXED: Hardcoded allowed origins (No trailing slash)
 app.use(cors({
     origin: [
-        "http://localhost:5173",                  // Your local frontend
-        "https://polling-project-opal.vercel.app" // Your live frontend (NO SLASH!)
+        "http://localhost:5173",
+        "https://polling-project-opal.vercel.app"
     ],
     credentials: true
 }));
 
-app.use(express.json()); // Built-in Express parser
+app.use(express.json());
 
-// In-memory data store
 let polls = [];
-
-// Helper function to generate unique IDs
 const generateId = (prefix = 'id') => {
     return `${prefix}_${Math.random().toString(36).substr(2, 9)}`;
 };
@@ -58,7 +54,7 @@ app.post('/api/polls', (req, res) => {
         })),
         allowMultiple: !!allowMultiple,
         totalVotes: 0,
-        voters: [], 
+        voters: [],
         status: 'active',
         createdAt: new Date(),
         expiresAt: expiresAt ? new Date(expiresAt) : null,
@@ -73,7 +69,7 @@ app.post('/api/polls', (req, res) => {
 app.post('/api/polls/:id/vote', (req, res) => {
     const { optionId, sessionId } = req.body;
     const pollId = req.params.id;
-    const voterId = sessionId || req.ip; 
+    const voterId = sessionId || req.ip;
 
     const pollIndex = polls.findIndex(p => p.id === pollId);
     if (pollIndex === -1) {
